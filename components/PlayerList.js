@@ -1,0 +1,16 @@
+'use client';
+import Icon from './Icons';
+import {PLAYERS,money,compact} from '../lib/market';
+import {PROFILES} from '../lib/cards';
+export default function PlayerList({players,search,setSearch,role,setRole,onlyFavorites,setOnlyFavorites,favorites,onFavorite,onSelect,sort,setSort,getPrice,getChange,onRefresh}){
+  return <section className="players-page">
+    <div className="players-page-title"><h1>선수 목록</h1><button className="icon-button" aria-label="샘플 시세 갱신" onClick={onRefresh}><Icon name="refresh" size={18}/></button></div>
+    <label className="search-field players-search"><Icon name="search" size={18}/><input aria-label="선수 검색" placeholder="선수명 또는 티커 검색" value={search} onChange={e=>setSearch(e.target.value)}/>{search&&<button aria-label="검색 지우기" onClick={()=>setSearch('')}><Icon name="close" size={15}/></button>}</label>
+    <div className="list-market-tabs"><button className={!onlyFavorites?'active':''} onClick={()=>setOnlyFavorites(false)}>전체 <small>{PLAYERS.length}</small></button><button className={onlyFavorites?'active':''} onClick={()=>setOnlyFavorites(true)}><Icon name="star" size={13}/> 관심 <small>{favorites.length}</small></button><span>MLB <i/> P 마켓</span></div>
+    <div className="list-controls"><div className="filter-tabs">{['전체','타자','투수'].map(x=><button key={x} className={role===x?'active':''} onClick={()=>setRole(x)}>{x}</button>)}</div><select aria-label="목록 정렬" value={sort} onChange={e=>setSort(e.target.value)}><option value="volume">거래량순</option><option value="change">등락률순</option><option value="price">현재가순</option><option value="name">이름순</option></select></div>
+    <div className="list-column-labels"><button className={sort==='name'?'active':''} onClick={()=>setSort('name')}>선수명 <Icon name="down" size={10}/></button><button className={sort==='price'?'active':''} onClick={()=>setSort('price')}>현재가 <Icon name="down" size={10}/></button><button className={sort==='change'?'active':''} onClick={()=>setSort('change')}>등락률 <Icon name="down" size={10}/></button></div>
+    <div className="player-exchange-list">{players.map(p=>{const change=getChange(p);return <article className="player-exchange-row" key={p.id}><button className={`list-favorite ${favorites.includes(p.id)?'is-favorite':''}`} aria-label={`${p.name} 관심 전환`} aria-pressed={favorites.includes(p.id)} onClick={()=>onFavorite(p.id)}><Icon name="star" size={14}/></button><button className="player-exchange-select" onClick={()=>onSelect(p.id)} aria-label={`${p.name} 거래 화면 열기`}><span className="player-identity"><span className="list-token" style={{'--accent':PROFILES[p.id].accent}}>{p.symbol}<small>{p.number}</small></span><span><strong>{p.name}</strong><small>{p.symbol}<i>/ P</i><em>{p.position}</em></small></span></span><span className="player-list-price"><strong>{money(getPrice(p))}</strong><small>{compact(p.volume)} P</small></span><span className={`player-list-change ${change>=0?'up':'down'}`}><strong>{change>0?'+':''}{change.toFixed(2)}%</strong><small>{p.value} OVR</small></span></button></article>;})}</div>
+    {!players.length&&<div className="list-empty"><Icon name="search" size={26}/><p>일치하는 선수가 없습니다.</p><button onClick={()=>{setSearch('');setRole('전체');setOnlyFavorites(false);}}>필터 초기화</button></div>}
+    <div className="list-footer"><span>{players.length}개 종목</span><span>시세·거래량·성적은 샘플입니다.</span></div>
+  </section>;
+}
